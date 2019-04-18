@@ -14,7 +14,7 @@ class Initiator : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
-        // Initiator flow logic goes here.
+        println("AAAAAAA")
     }
 }
 
