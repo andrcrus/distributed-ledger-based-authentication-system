@@ -42,7 +42,7 @@ allprojects {
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
         kotlinOptions {
-            languageVersion = "1.2"
+            languageVersion = "1.3"
             apiVersion = "1.2"
             jvmTarget = "1.8"
             javaParameters = true   // Useful for reflection.
@@ -85,7 +85,7 @@ dependencies {
 
 cordapp {
     info {
-        name "CorDapp Template"
+        name "CorDapp Diploma"
         vendor "Corda Open Source"
         targetPlatformVersion corda_platform_version.toInteger()
         minimumPlatformVersion corda_platform_version.toInteger()
@@ -101,7 +101,7 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         cordapp project(':workflows')
     }
     node {
-        name "O=Notary,L=London,C=GB"
+        name "O=RootContainer,L=London,C=GB"
         notary = [validating : false]
         p2pPort 10002
         rpcSettings {
@@ -110,20 +110,11 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
         }
     }
     node {
-        name "O=PartyA,L=London,C=GB"
+        name "O=GlassContainer,L=NY,C=USA"
         p2pPort 10005
         rpcSettings {
             address("localhost:10006")
             adminAddress("localhost:10046")
-        }
-        rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
-    }
-    node {
-        name "O=PartyB,L=New York,C=US"
-        p2pPort 10018
-        rpcSettings {
-            address("localhost:10019")
-            adminAddress("localhost:10149")
         }
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
