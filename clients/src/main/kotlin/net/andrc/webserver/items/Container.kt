@@ -9,8 +9,8 @@ package net.andrc.webserver.items
 open class Container(private val maxCapacity: Long, val name: String) {
     var currentCapacity: Long = 0L
 
-    val containers: MutableMap<String, Container> = HashMap()
-    val items: MutableMap<String, Item> = HashMap()
+    private val containers: MutableMap<String, Container> = HashMap()
+    private val items: MutableMap<String, Item> = HashMap()
 
     fun putContainer(container: Container): Boolean {
         if (currentCapacity + container.maxCapacity > maxCapacity) {
@@ -42,5 +42,13 @@ open class Container(private val maxCapacity: Long, val name: String) {
         val container = containers[containerName] ?: return
         currentCapacity -= container.maxCapacity
         items.remove(containerName)
+    }
+
+    fun getImmutableContainers(): Map<String, Container> {
+        return containers.toMap()
+    }
+
+    fun getImmutableItems(): Map<String, Item> {
+        return items.toMap()
     }
 }

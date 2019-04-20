@@ -8,12 +8,12 @@ class RootContainer(maxCapacity: Long, name: String) : Container(maxCapacity, na
     fun getAllItems(): Map<String, Item> {
         val containerQueue: Queue<Container> = LinkedList<Container>()
         val result: MutableMap<String, Item> = HashMap()
-        result.putAll(items)
-        containers.values.forEach { containerQueue.add(it) }
+        result.putAll(getImmutableItems())
+        getImmutableContainers().values.forEach { containerQueue.add(it) }
         while (containerQueue.size != 0) {
             val current = containerQueue.poll()
-            result.putAll(current.items)
-            current.containers.values.forEach { containerQueue.add(it) }
+            result.putAll(current.getImmutableItems())
+            current.getImmutableContainers().values.forEach { containerQueue.add(it) }
         }
         return result.toMap()
     }
