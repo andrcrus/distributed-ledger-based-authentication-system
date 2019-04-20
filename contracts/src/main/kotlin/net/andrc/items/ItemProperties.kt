@@ -1,5 +1,8 @@
-package net.andrc.webserver.items
+package net.andrc.items
 
+/**
+ * @author andrey.makhnov
+ */
 enum class ItemProperties {
     FRAGILE,
     SLOUGHING,

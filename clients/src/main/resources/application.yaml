@@ -1,0 +1,4 @@
+containers:
+  root:
+    name: "RootContainer"
+    maxCapacity: 100

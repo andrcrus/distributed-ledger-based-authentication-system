@@ -1,7 +1,8 @@
-package net.andrc.webserver.items
+package net.andrc.items
 
-import net.andrc.webserver.cordaCommon.ItemCertificate
-
+/**
+ * @author andrey.makhnov
+ */
 data class Item (
         val name: String,
         val capacity: Long,

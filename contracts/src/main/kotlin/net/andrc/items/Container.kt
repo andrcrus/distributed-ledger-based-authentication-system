@@ -1,16 +1,18 @@
-package net.andrc.webserver.items
+package net.andrc.items
+
+import net.corda.core.identity.Party
+import kotlin.collections.HashMap
 
 /**
  * @author andrey.makhnov
  *
  *  Container class. Not thread safe.
  */
+open class Container(val maxCapacity: Long, val name: String, val owner: Party) {
+    private var currentCapacity: Long = 0L
 
-open class Container(private val maxCapacity: Long, val name: String) {
-    var currentCapacity: Long = 0L
-
-    private val containers: MutableMap<String, Container> = HashMap()
-    private val items: MutableMap<String, Item> = HashMap()
+    protected open val containers: MutableMap<String, Container> = HashMap()
+    protected open val items: MutableMap<String, Item> = HashMap()
 
     fun putContainer(container: Container): Boolean {
         if (currentCapacity + container.maxCapacity > maxCapacity) {
@@ -28,14 +30,14 @@ open class Container(private val maxCapacity: Long, val name: String) {
         }
 
         currentCapacity += item.capacity
-        items[item.name] = item
+        items[item.certificate.id] = item
         return true
     }
 
-    fun deleteItem(itemName: String) {
-        val item = items[itemName] ?: return
+    fun deleteItem(certificateId: String) {
+        val item = items[certificateId] ?: return
         currentCapacity -= item.capacity
-        items.remove(itemName)
+        items.remove(certificateId)
     }
 
     fun deleteContainer(containerName: String) {
