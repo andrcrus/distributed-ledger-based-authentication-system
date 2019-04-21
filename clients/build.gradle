@@ -28,12 +28,12 @@ dependencies {
 
 
 springBoot {
-    mainClassName = "com.template.webserver.ServerKt"
+    mainClassName = "net.andrc.webserver.ServerKt"
 }
 
 
 task runTemplateServer(type: JavaExec, dependsOn: assemble) {
     classpath = sourceSets.main.runtimeClasspath
-    main = 'com.template.webserver.ServerKt'
-    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10006', '--config.rpc.username=user1', '--config.rpc.password=test'
+    main = 'net.andrc.webserver.ServerKt'
+    args '--server.port=10050', '--config.rpc.host=localhost', '--config.rpc.port=10003', '--config.rpc.username=user1', '--config.rpc.password=test'
 }

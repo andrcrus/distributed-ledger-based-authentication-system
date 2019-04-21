@@ -22,8 +22,7 @@ class PutContainerContract : Contract {
         val command = tx.commands.requireSingleCommand<Send>()
         "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
         val containerInfo = tx.outputs.single().data as PutContainerState
-        "Container must be not empty" using (containerInfo.container.getImmutableItems().isEmpty() && containerInfo.container.getImmutableContainers().isNotEmpty())
-        "Container must be not empty" using (containerInfo.container.getImmutableItems().isNotEmpty() && containerInfo.container.getImmutableContainers().isEmpty())
+        "Container must be not empty" using (containerInfo.container.isEmpty())
         "Container capacity must be positive" using (containerInfo.container.maxCapacity > 0)
     }
 

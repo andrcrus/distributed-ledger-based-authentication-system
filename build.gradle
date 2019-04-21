@@ -113,13 +113,14 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
             address("localhost:10003")
             adminAddress("localhost:10043")
         }
+	rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }
     node {
-        name "O=GlassContainer,L=NY,C=USA"
-        p2pPort 10005
+        name "O=GlassContainer,L=NY,C=US"
+        p2pPort 11115
         rpcSettings {
-            address("localhost:10006")
-            adminAddress("localhost:10046")
+            address("localhost:11116")
+            adminAddress("localhost:11146")
         }
         rpcUsers = [[ user: "user1", "password": "test", "permissions": ["ALL"]]]
     }

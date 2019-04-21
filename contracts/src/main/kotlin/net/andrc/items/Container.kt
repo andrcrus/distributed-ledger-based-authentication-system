@@ -1,6 +1,7 @@
 package net.andrc.items
 
 import net.corda.core.identity.Party
+import net.corda.core.serialization.CordaSerializable
 import kotlin.collections.HashMap
 
 /**
@@ -8,6 +9,7 @@ import kotlin.collections.HashMap
  *
  *  Container class. Not thread safe.
  */
+@CordaSerializable
 open class Container(val maxCapacity: Long, val name: String, val owner: Party) {
     private var currentCapacity: Long = 0L
 
@@ -52,5 +54,9 @@ open class Container(val maxCapacity: Long, val name: String, val owner: Party) 
 
     fun getImmutableItems(): Map<String, Item> {
         return items.toMap()
+    }
+
+    fun isEmpty(): Boolean {
+        return items.isEmpty() && containers.isEmpty()
     }
 }

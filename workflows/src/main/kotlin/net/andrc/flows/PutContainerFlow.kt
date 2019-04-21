@@ -4,9 +4,7 @@ import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.PutContainerContract
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Command
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -15,6 +13,7 @@ import net.corda.core.utilities.ProgressTracker
 // * Flows *
 // *********
 @StartableByRPC
+@InitiatingFlow
 class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<SignedTransaction>() {
     override val progressTracker: ProgressTracker = tracker()
     companion object {
@@ -27,7 +26,7 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
-        val flowSession = initiateFlow(containerInfo.owner)
+        val flowSessionOther = initiateFlow(notary)
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
                 .addCommand(Command(PutContainerContract.Send(), listOf(containerInfo.owner.owningKey)))
@@ -41,8 +40,9 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
             progressTracker.currentStep = VERIFYING_FAILED
             throw e
         }
+        subFlow(ReceiveFinalityFlow(flowSessionOther, signedRecord.id))
         progressTracker.currentStep = SENDING
-        return subFlow(FinalityFlow(signedRecord, flowSession))
+        return subFlow(FinalityFlow(signedRecord, flowSessionOther))
     }
 }
 
