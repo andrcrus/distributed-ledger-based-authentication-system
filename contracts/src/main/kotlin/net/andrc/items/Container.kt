@@ -59,4 +59,10 @@ open class Container(val maxCapacity: Long, val name: String, val owner: Party) 
     fun isEmpty(): Boolean {
         return items.isEmpty() && containers.isEmpty()
     }
+
+    override fun toString(): String {
+        return "Container(maxCapacity=$maxCapacity, name='$name', owner=$owner, containers=$containers, items=$items)"
+    }
+
+
 }

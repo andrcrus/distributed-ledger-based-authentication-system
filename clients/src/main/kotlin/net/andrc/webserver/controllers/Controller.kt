@@ -5,8 +5,8 @@ import net.andrc.items.Item
 import net.andrc.items.ItemCertificate
 import net.andrc.states.PutContainerState
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
+import net.andrc.webserver.cordaCommon.toJson
 import net.andrc.webserver.services.CordaDialogService
-import net.corda.core.crypto.SecureHash
 import net.corda.core.transactions.SignedTransaction
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
-import java.util.*
 
 
 /**
@@ -64,7 +63,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     )
 
     @GetMapping(value = ["/containers/register"], produces = ["application/json"])
-    fun putContainer(): ResponseEntity<Any> {
+    fun putContainer(): ResponseEntity<String> {
         lateinit var result: SignedTransaction
         try {
              result = cordaDialogService.registerNewContainer(initContainer())
@@ -72,9 +71,9 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
-        return ResponseEntity.ok(result)
+        return ResponseEntity.ok(result.toJson())
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
-    fun vaccinationRecords(): String = proxy.vaultQuery(PutContainerState::class.java).toString()
+    fun vaccinationRecords(): String = proxy.vaultQuery(PutContainerState::class.java).states.toJson()
 }
