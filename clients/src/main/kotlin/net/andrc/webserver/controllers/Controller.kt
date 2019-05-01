@@ -6,6 +6,7 @@ import net.andrc.items.ItemCertificate
 import net.andrc.states.PutContainerState
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.services.CordaDialogService
+import net.corda.core.crypto.SecureHash
 import net.corda.core.transactions.SignedTransaction
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -34,7 +35,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
 
 
     fun initContainer(): Container {
-        val result = Container(10, "Container#${counter++}", proxy.partiesFromName("GlassContainer", false).first())
+        val result = Container(10, "Container#${counter++}", proxy.partiesFromName("RootContainer", false).first())
         for (i in 1..10) {
             result.putItem(generateItem())
         }
@@ -63,7 +64,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     )
 
     @GetMapping(value = ["/containers/register"], produces = ["application/json"])
-    fun putContainer(): ResponseEntity<String> {
+    fun putContainer(): ResponseEntity<Any> {
         lateinit var result: SignedTransaction
         try {
              result = cordaDialogService.registerNewContainer(initContainer())
@@ -71,7 +72,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
-        return ResponseEntity.ok(result.toString())
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])

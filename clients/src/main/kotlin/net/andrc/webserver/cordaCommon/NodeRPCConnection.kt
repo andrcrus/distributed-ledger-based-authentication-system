@@ -36,13 +36,15 @@ open class NodeRPCConnection(
         private set
     lateinit var proxy: CordaRPCOps
         private set
+    lateinit var proxyNotary: CordaRPCOps
+        private set
 
     @PostConstruct
     fun initialiseNodeRPCConnection() {
-            val rpcAddress = NetworkHostAndPort(host, rpcPort)
-            val rpcClient = CordaRPCClient(rpcAddress)
-            val rpcConnection = rpcClient.start(username, password)
-            proxy = rpcConnection.proxy
+        val rpcAddress = NetworkHostAndPort(host, rpcPort)
+        val rpcClient = CordaRPCClient(rpcAddress)
+        val rpcConnection = rpcClient.start(username, password)
+        proxy = rpcConnection.proxy
     }
 
     @PreDestroy
