@@ -76,5 +76,5 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
-    fun vaccinationRecords(): MutableList<PutContainerState> = proxy.vaultQuery(PutContainerState::class.java).states.map { it.state.data }.toCollection(Collections.emptyList())
+    fun vaccinationRecords(): String = proxy.vaultQuery(PutContainerState::class.java).toString()
 }
