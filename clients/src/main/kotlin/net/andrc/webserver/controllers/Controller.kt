@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.lang.StringBuilder
 import java.security.KeyPairGenerator
 import java.security.SecureRandom
 
@@ -71,7 +72,18 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
-    fun vaccinationRecords(): String = proxy.vaultQuery(PutContainerState::class.java).states.toJson()
+    fun vaccinationRecords(): String {
+        val builder = StringBuilder("[")
+        val iterator = proxy.vaultQuery(PutContainerState::class.java).states.iterator()
+        while (iterator.hasNext()) {
+            builder.append(iterator.next().state.data.toString())
+            if (iterator.hasNext()) {
+                builder.append(",\n")
+            }
+        }
+        builder.append("]")
+        return builder.toString()
+    }
 
     @GetMapping(value = ["/containers/all"], produces = ["application/json"])
     fun allContainers(): String = cordaDialogService.rootBoxService.getAll().toString()
