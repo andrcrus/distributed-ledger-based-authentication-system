@@ -1,5 +1,6 @@
 package net.andrc.contracts
 
+import net.andrc.items.Item
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -18,12 +19,17 @@ class PutContainerContract : Contract {
 
     class Send : TypeOnlyCommandData()
 
+    private fun getItemsCapacity(items: List<Item>): Long {
+        return items.stream().mapToLong{it.capacity}.sum()
+    }
+
     override fun verify(tx: LedgerTransaction) = requireThat {
         tx.commands.requireSingleCommand<Send>()
         "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
         val containerInfo = tx.outputs.single().data as PutContainerState
-        "Container must be not empty" using (containerInfo.items.isEmpty())
+        "Container must be not empty" using (containerInfo.items.isNotEmpty())
         "Container capacity must be positive" using (containerInfo.maxCapacity > 0)
+        "Container capacity must be greater then all items capacity" using (getItemsCapacity(containerInfo.items) <= containerInfo.maxCapacity)
     }
 
 }

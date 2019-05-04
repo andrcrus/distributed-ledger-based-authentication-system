@@ -8,7 +8,6 @@ import net.corda.core.transactions.SignedTransaction
 fun SignedTransaction.toJson(): String {
     return """{
         |"tx" : "${this.tx}",
-        |"coreTx" : "${this.coreTransaction}",
         |"id" : "${this.id}",
         |"sigs: "${this.sigs}"
         |}""".trimMargin()

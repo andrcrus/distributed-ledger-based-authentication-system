@@ -33,7 +33,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     private val proxy = rpc.proxy
 
 
-    fun initContainer(): Container {
+    private fun initContainer(): Container {
         val result = Container(10, "Container#${counter++}", proxy.partiesFromName("RootContainer", false).first())
         for (i in 1..10) {
             result.putItem(generateItem())
