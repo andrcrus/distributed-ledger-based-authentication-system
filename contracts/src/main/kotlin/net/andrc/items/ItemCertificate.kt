@@ -11,6 +11,5 @@ import java.util.*
 @CordaSerializable
 data class ItemCertificate (
         val id: String = UUID.randomUUID().toString(),
-        val publicKey: PublicKey,
-        val privateKey: PrivateKey
+        val date: Date = Date()
 )

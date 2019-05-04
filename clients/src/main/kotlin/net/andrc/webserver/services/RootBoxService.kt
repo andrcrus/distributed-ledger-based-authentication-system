@@ -37,4 +37,11 @@ class RootBoxService(rootBoxConfig: RootBoxServiceConfig) {
             rootContainer.deleteContainer(containerName)
         }
     }
+
+    fun getAll(): Any {
+        val result = HashMap<String, Map<String, Any>>()
+        result["items"] = rootContainer.getImmutableItems()
+        result["containers"] = rootContainer.getImmutableContainers()
+        return result
+    }
 }

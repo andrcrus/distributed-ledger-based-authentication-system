@@ -42,11 +42,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
     }
 
     private fun generateItem(): Item {
-        val keyGen = KeyPairGenerator.getInstance("DSA", "SUN")
-        val random = SecureRandom.getInstance("SHA1PRNG", "SUN")
-        keyGen.initialize(1024, random)
-        val pair = keyGen.generateKeyPair()
-        val certificate = ItemCertificate(publicKey = pair.public, privateKey = pair.private)
+        val certificate = ItemCertificate()
         return Item("Tomatos", 1, certificate, listOf())
     }
 
@@ -76,4 +72,7 @@ class Controller(rpc: NodeRPCConnection, val cordaDialogService: CordaDialogServ
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
     fun vaccinationRecords(): String = proxy.vaultQuery(PutContainerState::class.java).states.toJson()
+
+    @GetMapping(value = ["/containers/all"], produces = ["application/json"])
+    fun allContainers(): String = cordaDialogService.rootBoxService.getAll().toString()
 }

@@ -18,7 +18,7 @@ fun List<StateAndRef<PutContainerState>>.toJson(): String {
     val builder = StringBuilder("[")
     val itt = iterator()
     while (itt.hasNext()) {
-        builder.append(itt.next().state.toString())
+        builder.append(itt.next().state.data.toString())
         if (itt.hasNext()) {
             builder.append(",\n")
         }

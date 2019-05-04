@@ -9,7 +9,7 @@ import net.corda.core.transactions.SignedTransaction
 import org.springframework.stereotype.Service
 
 @Service
-class CordaDialogService(private val rootBoxService: RootBoxService, rpc: NodeRPCConnection) {
+class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnection) {
     private val proxy = rpc.proxy
 
     fun registerNewContainer(container: Container): SignedTransaction  {
