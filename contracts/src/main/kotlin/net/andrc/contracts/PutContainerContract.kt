@@ -17,14 +17,14 @@ class PutContainerContract : Contract {
         const val ID = "net.andrc.contracts.PutContainerContract"
     }
 
-    class Send : TypeOnlyCommandData()
+    class Put : TypeOnlyCommandData()
 
     private fun getItemsCapacity(items: List<Item>): Long {
         return items.stream().mapToLong{it.capacity}.sum()
     }
 
     override fun verify(tx: LedgerTransaction) = requireThat {
-        tx.commands.requireSingleCommand<Send>()
+        tx.commands.requireSingleCommand<Put>()
         "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
         val containerInfo = tx.outputs.single().data as PutContainerState
         "Container must be not empty" using (containerInfo.items.isNotEmpty())

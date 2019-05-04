@@ -1,5 +1,6 @@
 package net.andrc.webserver.services
 
+import net.andrc.flows.DeleteContainerFlow
 import net.andrc.flows.PutContainerFlow
 import net.andrc.items.Container
 import net.andrc.states.PutContainerState
@@ -26,5 +27,13 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
         else {
             throw OutOfContainerCapacityException("Oh my god. It's so big.")
         }
+    }
+
+    fun deleteContainer(containerName: String): SignedTransaction {
+        val stateAndRef = proxy.vaultQuery(PutContainerState::class.java).states.first { it.state.data.containerName == containerName }
+        val startFlowDynamic = proxy.startFlowDynamic(DeleteContainerFlow::class.java, stateAndRef)
+        val result = startFlowDynamic.returnValue.get()
+        rootBoxService.deleteContainer(containerName)
+        return result
     }
 }
