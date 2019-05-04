@@ -19,11 +19,11 @@ class PutContainerContract : Contract {
     class Send : TypeOnlyCommandData()
 
     override fun verify(tx: LedgerTransaction) = requireThat {
-        val command = tx.commands.requireSingleCommand<Send>()
+        tx.commands.requireSingleCommand<Send>()
         "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
         val containerInfo = tx.outputs.single().data as PutContainerState
-        "Container must be not empty" using (containerInfo.container.isEmpty())
-        "Container capacity must be positive" using (containerInfo.container.maxCapacity > 0)
+        "Container must be not empty" using (containerInfo.items.isEmpty())
+        "Container capacity must be positive" using (containerInfo.maxCapacity > 0)
     }
 
 }

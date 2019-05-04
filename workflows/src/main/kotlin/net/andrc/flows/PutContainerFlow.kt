@@ -15,6 +15,9 @@ import net.corda.core.utilities.ProgressTracker
 // *********
 // * Flows *
 // *********
+/**
+ * @author andrey.makhnov
+ */
 @StartableByRPC
 @InitiatingFlow
 class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<SignedTransaction>() {

@@ -2,11 +2,11 @@ package net.andrc.items
 
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
+import java.util.*
 import kotlin.collections.HashMap
 
 /**
  * @author andrey.makhnov
- *
  *  Container class. Not thread safe.
  */
 @CordaSerializable
@@ -58,6 +58,19 @@ open class Container(val maxCapacity: Long, val name: String, val owner: Party) 
 
     fun isEmpty(): Boolean {
         return items.isEmpty() && containers.isEmpty()
+    }
+
+    fun getAllItems(): List<Item> {
+        val containerQueue: Queue<Container> = LinkedList<Container>()
+        val result: MutableMap<String, Item> = HashMap()
+        result.putAll(getImmutableItems())
+        getImmutableContainers().values.forEach { containerQueue.add(it) }
+        while (containerQueue.size != 0) {
+            val current = containerQueue.poll()
+            result.putAll(current.getImmutableItems())
+            current.getImmutableContainers().values.forEach { containerQueue.add(it) }
+        }
+        return result.values.toList()
     }
 
     override fun toString(): String {
