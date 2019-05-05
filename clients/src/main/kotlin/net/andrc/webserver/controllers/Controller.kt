@@ -16,16 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import java.lang.StringBuilder
-import java.security.KeyPairGenerator
-import java.security.SecureRandom
-
 
 /**
  * @author andrey.makhnov
  */
 @RestController
-@RequestMapping("/") // The paths for HTTP requests are relative to this base path.
+@RequestMapping("/")
 class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService) {
     private var counter = 0L
 
@@ -65,7 +61,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     fun putContainer(): ResponseEntity<String> {
         lateinit var result: SignedTransaction
         try {
-             result = cordaDialogService.registerNewContainer(initContainer())
+            result = cordaDialogService.registerNewContainer(initContainer())
         }
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
@@ -97,7 +93,8 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         try {
             val realName = String(Base64.decode(name))
             result = cordaDialogService.deleteContainer(realName)
-        }catch (e: Exception) {
+        }
+        catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
         return ResponseEntity.ok(result.toJson())

@@ -1,6 +1,7 @@
 package net.andrc.contracts
 
 import net.andrc.states.DeleteContainerState
+import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.Requirements.using
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -19,8 +20,10 @@ class DeleteContainerContract : Contract {
     class Delete : TypeOnlyCommandData()
 
     override fun verify(tx: LedgerTransaction) {
-        tx.commands.requireSingleCommand<Delete>()
-        "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
+        tx.commands.first{ it.value == Delete() }
+        "There can be no inputs when register new container" using  (tx.inputs.isNotEmpty())
         val output = tx.outputs.single().data as DeleteContainerState
+        val input = tx.inputs.single().state.data as PutContainerState
+        "Names must be equals" using (output.containerName == input.containerName)
     }
 }

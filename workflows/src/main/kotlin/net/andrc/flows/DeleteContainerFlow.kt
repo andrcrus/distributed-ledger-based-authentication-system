@@ -2,6 +2,7 @@ package net.andrc.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.DeleteContainerContract
+import net.andrc.contracts.PutContainerContract
 import net.andrc.states.DeleteContainerState
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Command
@@ -32,6 +33,8 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
         serviceHub.vaultService.queryBy(PutContainerState::class.java).states.first { it.state.data.containerName == containerInfo.state.data.containerName }
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
+                .addInputState(containerInfo)
+                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.state.data.owner.owningKey)))
                 .addCommand(Command(DeleteContainerContract.Delete(), listOf(containerInfo.state.data.owner.owningKey)))
                 .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner))
         val signedRecord = serviceHub.signInitialTransaction(tx)

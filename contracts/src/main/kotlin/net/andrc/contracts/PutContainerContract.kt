@@ -3,8 +3,8 @@ package net.andrc.contracts
 import net.andrc.items.Item
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Contract
+import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.TypeOnlyCommandData
-import net.corda.core.contracts.requireSingleCommand
 import net.corda.core.contracts.requireThat
 import net.corda.core.transactions.LedgerTransaction
 
@@ -24,9 +24,14 @@ class PutContainerContract : Contract {
     }
 
     override fun verify(tx: LedgerTransaction) = requireThat {
-        tx.commands.requireSingleCommand<Put>()
-        "There can be no inputs when register new container" using  (tx.inputs.isEmpty())
-        val containerInfo = tx.outputs.single().data as PutContainerState
+        tx.commands.first{ it.value == Put() }
+        lateinit var containerInfo: ContractState
+        if (tx.commands.size == 1) {
+            "There can be no inputs when register new container" using (tx.inputs.isEmpty())
+            containerInfo = tx.outputs.single().data as PutContainerState
+        }else {
+            containerInfo = tx.inputs.single().state.data as PutContainerState
+        }
         "Container must be not empty" using (containerInfo.items.isNotEmpty())
         "Container capacity must be positive" using (containerInfo.maxCapacity > 0)
         "Container capacity must be greater then all items capacity" using (getItemsCapacity(containerInfo.items) <= containerInfo.maxCapacity)
