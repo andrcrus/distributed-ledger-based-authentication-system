@@ -33,7 +33,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
 
     private fun initContainer(): Container {
-        val result = Container(10, "Container#${counter++}", proxy.partiesFromName("RootContainer", false).first())
+        val result = Container(10, "Container#${counter++}", proxy.partiesFromName("GlassContainer", false).first())
         for (i in 1..10) {
             result.putItem(generateItem())
         }
@@ -46,7 +46,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/about"], produces = ["text/plain"])
-    fun templateendpoint(): String {
+    fun about(): String {
         logger.debug("Request to about...")
         return proxy.nodeInfo().toString()
     }

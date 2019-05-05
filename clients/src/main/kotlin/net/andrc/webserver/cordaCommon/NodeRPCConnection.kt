@@ -28,8 +28,8 @@ private const val CORDA_RPC_PORT = "config.rpc.port"
 @Component
 open class NodeRPCConnection(
         @Value("\${$CORDA_NODE_HOST}") private val host: String,
-        @Value("\${$CORDA_USER_NAME}") private val username: String,
-        @Value("\${$CORDA_USER_PASSWORD}") private val password: String,
+        @Value("\${$CORDA_USER_NAME}") val username: String,
+        @Value("\${$CORDA_USER_PASSWORD}") val password: String,
         @Value("\${$CORDA_RPC_PORT}") private val rpcPort: Int): AutoCloseable {
 
     lateinit var rpcConnection: CordaRPCConnection
