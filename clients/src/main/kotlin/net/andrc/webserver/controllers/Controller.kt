@@ -3,6 +3,7 @@ package net.andrc.webserver.controllers
 import net.andrc.items.Container
 import net.andrc.items.Item
 import net.andrc.items.ItemCertificate
+import net.andrc.items.OfficerCertificate
 import net.andrc.states.PutContainerState
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.cordaCommon.toJson
@@ -98,5 +99,14 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
         return ResponseEntity.ok(result.toJson())
+    }
+
+    @GetMapping(value = ["/containers/auth"], produces = ["application/json"])
+    fun createAuthReq(): String {
+        return cordaDialogService.createAuthRequest(initOfficerRequest())
+    }
+
+    private fun initOfficerRequest(): OfficerCertificate {
+        return OfficerCertificate("Andrey Makhnov", "Big Government Org")
     }
 }

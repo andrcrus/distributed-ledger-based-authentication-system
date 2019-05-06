@@ -1,13 +1,10 @@
 package net.andrc.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import net.andrc.contracts.DeleteContainerContract
-import net.andrc.contracts.PutContainerContract
-import net.andrc.states.DeleteContainerState
-import net.andrc.states.PutContainerState
+import net.andrc.contracts.OfficerAuthenticationRequestContract
+import net.andrc.states.OfficerAuthenticationRequestState
+import net.andrc.utils.isValid
 import net.corda.core.contracts.Command
-import net.corda.core.contracts.Requirements.using
-import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
@@ -22,7 +19,7 @@ import net.corda.core.utilities.ProgressTracker
  */
 @StartableByRPC
 @InitiatingFlow
-class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerState>) : FlowLogic<SignedTransaction>() {
+class OfficerAuthenticationRequestFlow(private val officerAuthenticationRequestState: OfficerAuthenticationRequestState) : FlowLogic<String>() {
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new container record!")
@@ -32,28 +29,25 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
     }
 
     @Suspendable
-    override fun call(): SignedTransaction {
+    override fun call(): String {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
-        val otherFlowSession = initiateFlow(containerInfo.state.data.owner)
-        serviceHub.vaultService.queryBy(PutContainerState::class.java).states.first { it.state.data.containerName == containerInfo.state.data.containerName }
+        val sessions = officerAuthenticationRequestState.owners.map { initiateFlow(it) }
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
-                .addInputState(containerInfo)
-                .addCommand(Command(PutContainerContract.Check(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
-                .addCommand(Command(DeleteContainerContract.Delete(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
-                .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner,
-                        participants = listOf(containerInfo.state.data.owner, ourIdentity)))
+                .addCommand(Command(OfficerAuthenticationRequestContract.Request(), listOf(ourIdentity.owningKey)))
+                .addOutputState(officerAuthenticationRequestState)
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
         signedRecord.tx.toLedgerTransaction(serviceHub).verify()
-        val allSignedTransaction = subFlow(CollectSignaturesFlow(signedRecord, listOf(otherFlowSession)))
+        val allSignedTransaction = subFlow(CollectSignaturesFlow(signedRecord, sessions))
         progressTracker.currentStep = SUCCESS
-        return subFlow(FinalityFlow(allSignedTransaction, listOf(otherFlowSession)))
+        subFlow(FinalityFlow(allSignedTransaction, sessions))
+        return officerAuthenticationRequestState.requestId
     }
 }
 
-@InitiatedBy(DeleteContainerFlow::class)
-class DeleteContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic<Unit>() {
+@InitiatedBy(OfficerAuthenticationRequestFlow::class)
+class OfficerAuthenticationRequestReceiver(private val flowSession: FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -61,7 +55,8 @@ class DeleteContainerFlowReceiver(private val flowSession: FlowSession) : FlowLo
             override fun checkTransaction(stx: SignedTransaction) {
                 requireThat {
                     val output = stx.tx.outputs.single().data
-                    "This must be an delete container transaction" using (output is DeleteContainerState)
+                    "This must be an  officer authentication request transaction" using (output is OfficerAuthenticationRequestState)
+                    "Certificate must be valid" using (isValid((output as OfficerAuthenticationRequestState).officerCertificate))
                 }
             }
         }

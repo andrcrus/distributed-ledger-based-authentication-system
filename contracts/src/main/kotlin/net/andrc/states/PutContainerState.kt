@@ -10,6 +10,9 @@ import net.corda.core.identity.Party
 // *********
 // * State *
 // *********
+/**
+ * @author andrey.makhnov
+ */
 @BelongsToContract(PutContainerContract::class)
 data class PutContainerState(
         val containerName: String,
