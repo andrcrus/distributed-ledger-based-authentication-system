@@ -6,17 +6,13 @@ import net.andrc.items.Container
 import net.andrc.states.PutContainerState
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.exceptions.OutOfContainerCapacityException
-import net.andrc.webserver.exceptions.UnknownOwnerException
-import net.corda.client.rpc.CordaRPCClient
-import net.corda.client.rpc.CordaRPCConnection
-import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
-import net.corda.core.messaging.CordaRPCOps
+import net.andrc.webserver.exceptions.UnknownContainerException
 import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.NetworkHostAndPort
 import org.springframework.stereotype.Service
-import javax.annotation.PreDestroy
 
+/**
+ * @author andrey.makhnov
+ */
 @Service
 class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnection) {
     private val proxy = rpc.proxy
@@ -24,7 +20,8 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
     fun registerNewContainer(container: Container): SignedTransaction  {
         if (rootBoxService.putContainer(container)) {
             val startFlowDynamic = proxy.startFlowDynamic(PutContainerFlow::class.java,
-                    PutContainerState(container.name, container.maxCapacity, container.getAllItems(), container.owner))
+                    PutContainerState(container.name, container.maxCapacity, container.getAllItems(), container.owner,
+                            participants = listOf(container.owner, proxy.nodeInfo().legalIdentities.first())))
             try {
                 return startFlowDynamic.returnValue.get()
             }catch (e: Exception) {
@@ -38,11 +35,19 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
     }
 
     fun deleteContainer(containerName: String): SignedTransaction {
-        val stateAndRef = proxy.vaultQuery(PutContainerState::class.java).states.first { it.state.data.containerName == containerName }
-        val startFlowDynamic = proxy.startFlowDynamic(DeleteContainerFlow::class.java, stateAndRef)
-        val result = startFlowDynamic.returnValue.get()
-        rootBoxService.deleteContainer(containerName)
-        return result
+        try {
+            val stateAndRef = proxy.vaultQuery(PutContainerState::class.java).states.first { it.state.data.containerName == containerName }
+            val startFlowDynamic = proxy.startFlowDynamic(DeleteContainerFlow::class.java, stateAndRef)
+            val result = startFlowDynamic.returnValue.get()
+            rootBoxService.deleteContainer(containerName)
+            return result
+        }
+        catch (e: NoSuchElementException) {
+            throw UnknownContainerException("$containerName does not exists in ledger.")
+        }
+        catch (e: Exception) {
+            throw e
+        }
     }
 
 }

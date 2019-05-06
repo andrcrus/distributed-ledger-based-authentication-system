@@ -35,7 +35,8 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
                 .addInputState(containerInfo)
                 .addCommand(Command(PutContainerContract.Check(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
                 .addCommand(Command(DeleteContainerContract.Delete(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
-                .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner))
+                .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner,
+                        participants = listOf(containerInfo.state.data.owner, ourIdentity)))
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
         signedRecord.tx.toLedgerTransaction(serviceHub).verify()
