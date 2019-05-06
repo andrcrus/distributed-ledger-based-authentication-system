@@ -30,10 +30,10 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
-        val otherFlowSession = initiateFlow(notary)
+        val otherFlowSession = initiateFlow(containerInfo.owner)
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
-                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.owner.owningKey, notary.owningKey)))
+                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.owner.owningKey, ourIdentity.owningKey)))
                 .addOutputState(containerInfo)
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING

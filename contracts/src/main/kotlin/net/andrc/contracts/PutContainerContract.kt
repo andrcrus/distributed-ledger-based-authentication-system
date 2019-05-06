@@ -18,19 +18,20 @@ class PutContainerContract : Contract {
     }
 
     class Put : TypeOnlyCommandData()
+    class Check : TypeOnlyCommandData()
 
     private fun getItemsCapacity(items: List<Item>): Long {
         return items.stream().mapToLong{it.capacity}.sum()
     }
 
     override fun verify(tx: LedgerTransaction) = requireThat {
-        tx.commands.first{ it.value == Put() }
+        val command = tx.commands.first { it.value == Put() || it.value == Check() }.value
         lateinit var containerInfo: ContractState
-        if (tx.commands.size == 1) {
+        containerInfo = if (tx.commands.size == 1 && command == Put()) {
             "There can be no inputs when register new container" using (tx.inputs.isEmpty())
-            containerInfo = tx.outputs.single().data as PutContainerState
+            tx.outputs.single().data as PutContainerState
         }else {
-            containerInfo = tx.inputs.single().state.data as PutContainerState
+            tx.inputs.single().state.data as PutContainerState
         }
         "Container must be not empty" using (containerInfo.items.isNotEmpty())
         "Container capacity must be positive" using (containerInfo.maxCapacity > 0)
