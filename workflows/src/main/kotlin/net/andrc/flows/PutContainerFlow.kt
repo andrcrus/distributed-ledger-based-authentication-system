@@ -4,10 +4,8 @@ import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.PutContainerContract
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Command
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.flows.StartableByRPC
+import net.corda.core.contracts.requireThat
+import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
@@ -25,29 +23,42 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new container record!")
         object VERIFYING : ProgressTracker.Step("Verifying the container record!")
-        object VERIFYING_FAILED : ProgressTracker.Step("Verifying is failed")
         object SUCCESS : ProgressTracker.Step("Create the container record!")
-        fun tracker() = ProgressTracker(CREATING, VERIFYING, VERIFYING_FAILED, SUCCESS)
+        fun tracker() = ProgressTracker(CREATING, VERIFYING, SUCCESS)
     }
 
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
+        val otherFlowSession = initiateFlow(notary)
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
-                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.owner.owningKey)))
+                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.owner.owningKey, notary.owningKey)))
                 .addOutputState(containerInfo)
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
-        try {
-            signedRecord.tx.toLedgerTransaction(serviceHub).verify()
-        }
-        catch (e: Exception) {
-            progressTracker.currentStep = VERIFYING_FAILED
-            throw e
-        }
+        signedRecord.tx.toLedgerTransaction(serviceHub).verify()
+        val allSignedTransaction = subFlow(CollectSignaturesFlow(signedRecord, listOf(otherFlowSession)))
         progressTracker.currentStep = SUCCESS
-        return subFlow(FinalityFlow(signedRecord, listOf()))
+        return subFlow(FinalityFlow(allSignedTransaction, listOf(otherFlowSession)))
+    }
+}
+
+@InitiatedBy(PutContainerFlow::class)
+class PutContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic<Unit>() {
+
+    @Suspendable
+    override fun call() {
+        val signedTransactionFlow = object : SignTransactionFlow(flowSession) {
+            override fun checkTransaction(stx: SignedTransaction) {
+                requireThat {
+                    val output = stx.tx.outputs.single().data
+                    "This must be an put container transaction" using (output is PutContainerState)
+                }
+            }
+        }
+        val id = subFlow(signedTransactionFlow).id
+        subFlow(ReceiveFinalityFlow(flowSession, id))
     }
 }
 
