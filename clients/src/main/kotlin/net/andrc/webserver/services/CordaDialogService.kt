@@ -20,7 +20,8 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
     fun registerNewContainer(container: Container): SignedTransaction  {
         if (rootBoxService.putContainer(container)) {
             val startFlowDynamic = proxy.startFlowDynamic(PutContainerFlow::class.java,
-                    PutContainerState(container.name, container.maxCapacity, container.getAllItems(), container.owner,
+                    PutContainerState(container.name, container.maxCapacity,
+                            container.getAllItems(), container.getContainersName(),container.owner,
                             participants = listOf(container.owner, proxy.nodeInfo().legalIdentities.first())))
             try {
                 return startFlowDynamic.returnValue.get()

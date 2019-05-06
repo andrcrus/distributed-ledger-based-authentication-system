@@ -15,6 +15,7 @@ data class PutContainerState(
         val containerName: String,
         val maxCapacity: Long,
         val items: List<Item>,
+        val containers: List<String>,
         val owner: Party,
         override val participants: List<AbstractParty> = listOf(owner)
 ) : ContractState
