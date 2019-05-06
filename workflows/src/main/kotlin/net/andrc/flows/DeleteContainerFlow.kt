@@ -1,24 +1,22 @@
 package net.andrc.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import net.andrc.contracts.DeleteContainerContract
 import net.andrc.contracts.PutContainerContract
+import net.andrc.states.DeleteContainerState
 import net.andrc.states.PutContainerState
 import net.corda.core.contracts.Command
+import net.corda.core.contracts.Requirements.using
+import net.corda.core.contracts.StateAndRef
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
-// *********
-// * Flows *
-// *********
-/**
- * @author andrey.makhnov
- */
 @StartableByRPC
 @InitiatingFlow
-class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<SignedTransaction>() {
+class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerState>) : FlowLogic<SignedTransaction>() {
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new container record!")
@@ -30,11 +28,15 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     @Suspendable
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
-        val otherFlowSession = initiateFlow(containerInfo.owner)
+        val otherFlowSession = initiateFlow(containerInfo.state.data.owner)
+        serviceHub.vaultService.queryBy(PutContainerState::class.java).states.first { it.state.data.containerName == containerInfo.state.data.containerName }
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
-                .addCommand(Command(PutContainerContract.Put(), listOf(containerInfo.owner.owningKey, ourIdentity.owningKey)))
-                .addOutputState(containerInfo)
+                .addInputState(containerInfo)
+                .addCommand(Command(PutContainerContract.Check(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
+                .addCommand(Command(DeleteContainerContract.Delete(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
+                .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner,
+                        participants = listOf(containerInfo.state.data.owner, ourIdentity)))
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
         signedRecord.tx.toLedgerTransaction(serviceHub).verify()
@@ -44,8 +46,8 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     }
 }
 
-@InitiatedBy(PutContainerFlow::class)
-class PutContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic<Unit>() {
+@InitiatedBy(DeleteContainerFlow::class)
+class DeleteContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic<Unit>() {
 
     @Suspendable
     override fun call() {
@@ -53,7 +55,7 @@ class PutContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic
             override fun checkTransaction(stx: SignedTransaction) {
                 requireThat {
                     val output = stx.tx.outputs.single().data
-                    "This must be an put container transaction" using (output is PutContainerState)
+                    "This must be an delete container transaction" using (output is DeleteContainerState)
                 }
             }
         }
@@ -61,8 +63,3 @@ class PutContainerFlowReceiver(private val flowSession: FlowSession) : FlowLogic
         subFlow(ReceiveFinalityFlow(flowSession, id))
     }
 }
-
-
-
-
-

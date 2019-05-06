@@ -3,6 +3,7 @@ package net.andrc.items
 import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 /**
@@ -54,6 +55,19 @@ open class Container(val maxCapacity: Long, val name: String, val owner: Party) 
 
     fun getImmutableItems(): Map<String, Item> {
         return items.toMap()
+    }
+
+    fun getContainersName(): List<String> {
+        val containerQueue: Queue<Container> = LinkedList<Container>()
+        val result: MutableList<Container> = ArrayList()
+        result.addAll(getImmutableContainers().values)
+        getImmutableContainers().values.forEach { containerQueue.add(it) }
+        while (containerQueue.size != 0) {
+            val current = containerQueue.poll()
+            result.addAll(current.getImmutableContainers().values)
+            current.getImmutableContainers().values.forEach { containerQueue.add(it) }
+        }
+        return result.map { it.name }
     }
 
     fun isEmpty(): Boolean {
