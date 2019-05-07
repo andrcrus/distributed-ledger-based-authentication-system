@@ -3,6 +3,7 @@ package net.andrc.flows
 import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.PutContainerContract
 import net.andrc.states.PutContainerState
+import net.andrc.utils.ContainerIsExistsException
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
@@ -29,6 +30,10 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
 
     @Suspendable
     override fun call(): SignedTransaction {
+        val size = serviceHub.vaultService.queryBy(PutContainerState::class.java).states.filter { it.state.data.containerName == containerInfo.containerName }.size
+        if (size != 0 ) {
+            throw ContainerIsExistsException("Container with name: ${containerInfo.containerName} is exists")
+        }
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
         val otherFlowSession = initiateFlow(containerInfo.owner)
         progressTracker.currentStep = CREATING

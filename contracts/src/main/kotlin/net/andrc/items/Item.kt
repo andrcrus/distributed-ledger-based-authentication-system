@@ -11,4 +11,17 @@ data class Item (
         val capacity: Long,
         val certificate: ItemCertificate,
         val properties : List<ItemProperties>
-)
+) {
+    fun getItemInfo(): String {
+        return """
+            |
+            |"item" : {
+            | "itemName" : "$name",
+            | "certificateId" : "${certificate.id}",
+            | "creationDate" : "${certificate.creationDate}"
+            | "expirationDate" : "${certificate.expirationDate}"
+            |}
+            |
+        """.trimMargin()
+    }
+}

@@ -5,6 +5,7 @@ import net.andrc.contracts.DeleteContainerContract
 import net.andrc.contracts.PutContainerContract
 import net.andrc.states.DeleteContainerState
 import net.andrc.states.PutContainerState
+import net.andrc.utils.ContainerIsExistsException
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.Requirements.using
 import net.corda.core.contracts.StateAndRef
@@ -14,14 +15,20 @@ import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.TransactionBuilder
 import net.corda.core.utilities.ProgressTracker
 
+// *********
+// * Flows *
+// *********
+/**
+ * @author andrey.makhnov
+ */
 @StartableByRPC
 @InitiatingFlow
 class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerState>) : FlowLogic<SignedTransaction>() {
     override val progressTracker: ProgressTracker = tracker()
     companion object {
-        object CREATING : ProgressTracker.Step("Creating a new container record!")
-        object VERIFYING : ProgressTracker.Step("Verifying the container record!")
-        object SUCCESS : ProgressTracker.Step("Create the container record!")
+        object CREATING : ProgressTracker.Step("Creating a new a new delete container record!")
+        object VERIFYING : ProgressTracker.Step("Verifying the delete container record!")
+        object SUCCESS : ProgressTracker.Step("Create the delete container record!")
         fun tracker() = ProgressTracker(CREATING, VERIFYING, SUCCESS)
     }
 
@@ -29,7 +36,7 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
     override fun call(): SignedTransaction {
         val notary = serviceHub.networkMapCache.notaryIdentities[0]
         val otherFlowSession = initiateFlow(containerInfo.state.data.owner)
-        serviceHub.vaultService.queryBy(PutContainerState::class.java).states.first { it.state.data.containerName == containerInfo.state.data.containerName }
+        serviceHub.vaultService.queryBy(PutContainerState::class.java).states.single{ it.state.data.containerName == containerInfo.state.data.containerName }
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
                 .addInputState(containerInfo)

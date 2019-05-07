@@ -6,7 +6,12 @@ import net.corda.core.contracts.ContractState
 import net.corda.core.identity.AbstractParty
 import net.corda.core.identity.Party
 
-
+// *********
+// * State *
+// *********
+/**
+ * @author andrey.makhnov
+ */
 @BelongsToContract(DeleteContainerContract::class)
 data class DeleteContainerState(
         val containerName: String,

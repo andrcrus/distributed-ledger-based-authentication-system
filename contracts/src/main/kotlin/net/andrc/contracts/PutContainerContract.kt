@@ -11,6 +11,9 @@ import net.corda.core.transactions.LedgerTransaction
 // ************
 // * Contract *
 // ************
+/**
+ * @author andrey.makhnov
+ */
 class PutContainerContract : Contract {
     companion object {
         // Used to identify our contract when building a transaction.
