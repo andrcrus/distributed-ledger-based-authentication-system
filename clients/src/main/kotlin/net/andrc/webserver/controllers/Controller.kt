@@ -5,6 +5,7 @@ import net.andrc.items.Item
 import net.andrc.items.ItemCertificate
 import net.andrc.items.OfficerCertificate
 import net.andrc.states.PutContainerState
+import net.andrc.states.ResponseStatus
 import net.andrc.utils.generateKeyPair
 import net.andrc.utils.signData
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
@@ -66,14 +67,14 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     @GetMapping(value = ["/containers/register"], produces = ["application/json"])
     fun putContainer(): ResponseEntity<String> {
-        lateinit var result: SignedTransaction
+        lateinit var result: String
         try {
             result = cordaDialogService.registerNewContainer(initContainer())
         }
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
-        return ResponseEntity.ok(result.toJson())
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
@@ -96,7 +97,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     @GetMapping(value = ["/containers/delete/{name}"], produces = ["application/json"])
     fun deleteContainer(@PathVariable name: String): ResponseEntity<String> {
-        lateinit var result: SignedTransaction
+        lateinit var result: String
         try {
             val realName = String(Base64.decode(name))
             result = cordaDialogService.deleteContainer(realName)
@@ -104,10 +105,10 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
         }
-        return ResponseEntity.ok(result.toJson())
+        return ResponseEntity.ok(result)
     }
 
-    @GetMapping(value = ["/containers/auth"], produces = ["application/json"])
+    @GetMapping(value = ["/containers/auth/request"], produces = ["application/json"])
     fun createAuthReq(): String {
         val keyPair = generateKeyPair()
         val data = secureRandom.nextLong().toString()
@@ -117,5 +118,14 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     private fun initOfficerRequest(keyPair: KeyPair): OfficerCertificate {
         return OfficerCertificate("Andrey Makhnov", "Big Government Org", keyPair.public)
+    }
+
+    @GetMapping(value = ["/containers/auth/response/{id}"], produces = ["application/json"])
+    fun createAuthResp(@PathVariable id: String): String {
+        val keyPair = generateKeyPair()
+        val data = secureRandom.nextLong().toString()
+        val sign = signData(data, keyPair.private)
+        val status = if (secureRandom.nextInt() % 2 == 0)  ResponseStatus.OK else ResponseStatus.FAILED
+        return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, status)
     }
 }

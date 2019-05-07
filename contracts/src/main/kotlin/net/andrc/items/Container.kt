@@ -88,8 +88,15 @@ open class Container(val maxCapacity: Long, val name: String, val owner: Party) 
     }
 
     override fun toString(): String {
-        return "Container(maxCapacity=$maxCapacity, name='$name', owner=$owner, containers=$containers, items=$items)"
+        return """
+            |{
+            |"maxCapacity" : "$maxCapacity",
+            |"name"="$name",
+            |"owner" : "$owner",
+            |"containers" : "$containers",
+            |"items" : ${items.map { it.value.getItemInfo() }}
+            |}
+            |
+        """.trimMargin()
     }
-
-
 }

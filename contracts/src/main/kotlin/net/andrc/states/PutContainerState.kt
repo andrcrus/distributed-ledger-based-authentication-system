@@ -21,4 +21,18 @@ data class PutContainerState(
         val containers: List<String>,
         val owner: Party,
         override val participants: List<AbstractParty> = listOf(owner)
-) : ContractState
+) : ContractState {
+    override fun toString(): String {
+        return """
+            |"container" : {
+            | "containerName" : "$containerName",
+            | "maxCapacity" : "$maxCapacity",
+            | "items" : ${items.map { it.getItemInfo() }},
+            | "containers" : "$containers",
+            | "owner" : "$owner",
+            | "participants" : "$participants"
+            |}
+            |
+        """.trimMargin()
+    }
+}
