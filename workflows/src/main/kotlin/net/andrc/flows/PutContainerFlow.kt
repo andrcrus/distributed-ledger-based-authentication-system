@@ -23,8 +23,8 @@ class PutContainerFlow(private val containerInfo: PutContainerState): FlowLogic<
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new container record!")
-        object VERIFYING : ProgressTracker.Step("Verifying the container record!")
-        object SUCCESS : ProgressTracker.Step("Create the container record!")
+        object VERIFYING : ProgressTracker.Step("Verifying a container record!")
+        object SUCCESS : ProgressTracker.Step("Create a container record!")
         fun tracker() = ProgressTracker(CREATING, VERIFYING, SUCCESS)
     }
 

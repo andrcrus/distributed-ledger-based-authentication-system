@@ -24,7 +24,7 @@ class DeleteContainerContract : Contract {
 
     override fun verify(tx: LedgerTransaction) {
         tx.commands.first{ it.value == Delete() }
-        "There can't be no inputs when register new container" using  (tx.inputs.isNotEmpty())
+        "There can't be no inputs when delete container" using  (tx.inputs.isNotEmpty())
         val output = tx.outputs.single().data as DeleteContainerState
         val input = tx.inputs.single().state.data as PutContainerState
         "Names must be equals" using (output.containerName == input.containerName)

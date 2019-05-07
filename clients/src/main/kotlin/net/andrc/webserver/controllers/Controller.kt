@@ -1,9 +1,6 @@
 package net.andrc.webserver.controllers
 
-import net.andrc.items.Container
-import net.andrc.items.Item
-import net.andrc.items.ItemCertificate
-import net.andrc.items.OfficerCertificate
+import net.andrc.items.*
 import net.andrc.states.PutContainerState
 import net.andrc.states.ResponseStatus
 import net.andrc.utils.generateKeyPair
@@ -127,5 +124,15 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val sign = signData(data, keyPair.private)
         val status = if (secureRandom.nextInt() % 2 == 0)  ResponseStatus.OK else ResponseStatus.FAILED
         return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, status)
+    }
+
+    @GetMapping(value = ["/containers/change-carrier"], produces = ["application/json"])
+    fun changeCarrier(): String {
+        val keyPair = generateKeyPair()
+        val carrierCert = CarrierCertificate(keyPair.public)
+        val carrier = Carrier( "OOO PEREVOZKA PRO", carrierCert)
+        val data = secureRandom.nextLong().toString()
+        val sign = signData(data, keyPair.private)
+        return cordaDialogService.changeCarrier(carrier, data, sign)
     }
 }
