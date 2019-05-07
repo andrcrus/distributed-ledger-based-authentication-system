@@ -2,6 +2,7 @@ package net.andrc.contracts
 
 import net.andrc.states.OfficerAuthenticationRequestState
 import net.andrc.utils.isValid
+import net.andrc.utils.verifySign
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.Requirements.using
 import net.corda.core.contracts.TypeOnlyCommandData
@@ -28,6 +29,7 @@ class OfficerAuthenticationRequestContract : Contract {
             "There can be no inputs when officer create request" using  (tx.inputs.isEmpty())
             val output = tx.outputs.single().data as OfficerAuthenticationRequestState
             "Certificate must be valid" using (isValid(output.officerCertificate))
+            "Signature must be valid" using (verifySign(output.data, output.signature, output.officerCertificate.publicKey))
         }
     }
 }

@@ -5,6 +5,8 @@ import net.andrc.items.Item
 import net.andrc.items.ItemCertificate
 import net.andrc.items.OfficerCertificate
 import net.andrc.states.PutContainerState
+import net.andrc.utils.generateKeyPair
+import net.andrc.utils.signData
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.cordaCommon.toJson
 import net.andrc.webserver.services.CordaDialogService
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.security.KeyPair
+import java.security.SecureRandom
 
 /**
  * @author andrey.makhnov
@@ -25,6 +29,8 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/")
 class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService) {
     private var counter = 0L
+
+    private val secureRandom = SecureRandom()
 
     companion object {
         private val logger = LoggerFactory.getLogger(RestController::class.java)
@@ -103,10 +109,13 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     @GetMapping(value = ["/containers/auth"], produces = ["application/json"])
     fun createAuthReq(): String {
-        return cordaDialogService.createAuthRequest(initOfficerRequest())
+        val keyPair = generateKeyPair()
+        val data = secureRandom.nextLong().toString()
+        val sign = signData(data, keyPair.private)
+        return cordaDialogService.createAuthRequest(initOfficerRequest(keyPair), data, sign)
     }
 
-    private fun initOfficerRequest(): OfficerCertificate {
-        return OfficerCertificate("Andrey Makhnov", "Big Government Org")
+    private fun initOfficerRequest(keyPair: KeyPair): OfficerCertificate {
+        return OfficerCertificate("Andrey Makhnov", "Big Government Org", keyPair.public)
     }
 }

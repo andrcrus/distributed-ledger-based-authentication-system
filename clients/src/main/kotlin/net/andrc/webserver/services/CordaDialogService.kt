@@ -60,9 +60,9 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
         return proxy.networkMapSnapshot().filter { it != proxy.nodeInfo() }.map { it.legalIdentities.first() }
     }
 
-    fun createAuthRequest(officerCertificate: OfficerCertificate): String {
+    fun createAuthRequest(officerCertificate: OfficerCertificate, data: String, sign: String): String {
         val startFlowDynamic = proxy.startFlowDynamic(OfficerAuthenticationRequestFlow::class.java,
-                OfficerAuthenticationRequestState(officerCertificate, getParties(), proxy.nodeInfo().legalIdentities))
+                OfficerAuthenticationRequestState(officerCertificate, data, sign, getParties(), proxy.nodeInfo().legalIdentities))
         val requestId = startFlowDynamic.returnValue.get()
         val deletedContainers = proxy.vaultQuery(DeleteContainerState::class.java).states.map { it.state.data.containerName }.toSet()
         val itemsCertificate = proxy.vaultQuery(PutContainerState::class.java).states

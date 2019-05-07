@@ -17,6 +17,8 @@ import java.util.*
 @BelongsToContract(OfficerAuthenticationRequestContract::class)
 data class OfficerAuthenticationRequestState(
         val officerCertificate: OfficerCertificate,
+        val data: String,
+        val signature: String,
         val owners: List<Party>,
         override val participants: List<AbstractParty>,
         val requestId: String = UUID.randomUUID().toString()
