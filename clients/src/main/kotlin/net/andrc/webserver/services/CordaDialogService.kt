@@ -84,6 +84,7 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
                 .filter { !deletedContainers.contains(it.state.data.containerName) }
                 .map { it.state.data.items }.flatten().map { it.certificate }
         return """
+            |
             |{
             |"id": "$requestId",
             |"itemsCertificate": "$itemsCertificate",
@@ -98,6 +99,7 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
                         responseStatus, requestId,proxy.nodeInfo().legalIdentities))
         val signedTransaction = startFlowDynamic.returnValue.get()
         return """
+            |
             |{
             | "txId" : "${signedTransaction.tx.id}",
             | "requestId" : "$requestId"
