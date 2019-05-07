@@ -3,6 +3,9 @@ package net.andrc.utils
 import java.security.*
 import java.util.*
 
+/**
+ * @author andrey.makhnov
+ */
 
 fun generateKeyPair(): KeyPair {
     val generator = KeyPairGenerator.getInstance("RSA")
