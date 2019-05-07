@@ -25,8 +25,8 @@ class OfficerAuthenticationResponseFlow(private val officerAuthenticationRespons
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new officer authentication request record!")
-        object VERIFYING : ProgressTracker.Step("Verifying the a new officer authentication request record!")
-        object SUCCESS : ProgressTracker.Step("Create the a new officer authentication request record!")
+        object VERIFYING : ProgressTracker.Step("Verifying a  new officer authentication request record!")
+        object SUCCESS : ProgressTracker.Step("Create a new officer authentication request record!")
         fun tracker() = ProgressTracker(CREATING, VERIFYING, SUCCESS)
     }
 

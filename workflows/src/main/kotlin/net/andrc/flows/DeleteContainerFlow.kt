@@ -27,8 +27,8 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new a new delete container record!")
-        object VERIFYING : ProgressTracker.Step("Verifying the delete container record!")
-        object SUCCESS : ProgressTracker.Step("Create the delete container record!")
+        object VERIFYING : ProgressTracker.Step("Verifying a delete container record!")
+        object SUCCESS : ProgressTracker.Step("Create a delete container record!")
         fun tracker() = ProgressTracker(CREATING, VERIFYING, SUCCESS)
     }
 

@@ -24,6 +24,7 @@ data class PutContainerState(
 ) : ContractState {
     override fun toString(): String {
         return """
+            |
             |"container" : {
             | "containerName" : "$containerName",
             | "maxCapacity" : "$maxCapacity",

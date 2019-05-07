@@ -1,9 +1,7 @@
 package net.andrc.webserver.services
 
-import net.andrc.flows.DeleteContainerFlow
-import net.andrc.flows.OfficerAuthenticationRequestFlow
-import net.andrc.flows.OfficerAuthenticationResponseFlow
-import net.andrc.flows.PutContainerFlow
+import net.andrc.flows.*
+import net.andrc.items.Carrier
 import net.andrc.items.Container
 import net.andrc.items.OfficerCertificate
 import net.andrc.states.*
@@ -31,6 +29,7 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
             try {
                 val signedTransaction =  startFlowDynamic.returnValue.get()
                 return """
+                    |
                     |{
                     | "txId" : "${signedTransaction.tx.id}",
                     | "containerName" : "${container.name}",
@@ -84,6 +83,7 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
                 .filter { !deletedContainers.contains(it.state.data.containerName) }
                 .map { it.state.data.items }.flatten().map { it.certificate }
         return """
+            |
             |{
             |"id": "$requestId",
             |"itemsCertificate": "$itemsCertificate",
@@ -98,10 +98,27 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
                         responseStatus, requestId,proxy.nodeInfo().legalIdentities))
         val signedTransaction = startFlowDynamic.returnValue.get()
         return """
+            |
             |{
             | "txId" : "${signedTransaction.tx.id}",
             | "requestId" : "$requestId"
             | "status" : "$responseStatus"
+            |}
+            |
+        """.trimMargin()
+    }
+
+    fun changeCarrier(carrier: Carrier, data: String, signature: String): String  {
+        val changeCarrierState = ChangeCarrierState(carrier, data, signature, getParties())
+        val startFlowDynamic = proxy.startFlowDynamic(ChangeCarrierFlow::class.java,
+                changeCarrierState)
+        val signedTransaction = startFlowDynamic.returnValue.get()
+        return """
+            |
+            |{
+            | "txId" : "${signedTransaction.tx.id}",
+            | "organizationName" : "${carrier.organizationName}"
+            | "date" : "${changeCarrierState.date}"
             |}
             |
         """.trimMargin()
