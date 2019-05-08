@@ -38,6 +38,10 @@ class RootBoxService(rootBoxConfig: RootBoxServiceConfig) {
         }
     }
 
+    fun getAllContainers(): List<Container> {
+        return rootContainer.getImmutableContainers().map { it.value }
+    }
+
     fun getAll(): Any {
         val result = HashMap<String, Map<String, Any>>()
         result["items"] = rootContainer.getImmutableItems()

@@ -3,6 +3,7 @@ package net.andrc.flows
 import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.DeleteContainerContract
 import net.andrc.contracts.PutContainerContract
+import net.andrc.items.GeoData
 import net.andrc.states.DeleteContainerState
 import net.andrc.states.PutContainerState
 import net.andrc.utils.ContainerIsExistsException
@@ -23,7 +24,8 @@ import net.corda.core.utilities.ProgressTracker
  */
 @StartableByRPC
 @InitiatingFlow
-class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerState>) : FlowLogic<SignedTransaction>() {
+class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerState>,
+                          private val geoData: GeoData) : FlowLogic<SignedTransaction>() {
     override val progressTracker: ProgressTracker = tracker()
     companion object {
         object CREATING : ProgressTracker.Step("Creating a new a new delete container record!")
@@ -43,7 +45,7 @@ class DeleteContainerFlow(private val containerInfo: StateAndRef<PutContainerSta
                 .addCommand(Command(PutContainerContract.Check(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
                 .addCommand(Command(DeleteContainerContract.Delete(), listOf(containerInfo.state.data.owner.owningKey, ourIdentity.owningKey)))
                 .addOutputState(DeleteContainerState(containerInfo.state.data.containerName, containerInfo.state.data.owner,
-                        participants = listOf(containerInfo.state.data.owner, ourIdentity)))
+                        participants = listOf(containerInfo.state.data.owner, ourIdentity), geoData = geoData))
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
         signedRecord.tx.toLedgerTransaction(serviceHub).verify()

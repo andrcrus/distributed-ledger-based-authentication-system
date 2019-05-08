@@ -1,4 +1,4 @@
 containers:
   root:
     name: "RootContainer"
-    maxCapacity: 100
+    maxCapacity: 10000

@@ -33,14 +33,16 @@ class OfficerAuthContract : Contract {
             "Signature must be valid" using (verifySign(output.data, output.signature, output.officerCertificate.publicKey))
         }
         if (command == Response()) {
-            "There can be no inputs when officer create request" using  (tx.inputs.isNotEmpty())
+            "There can't be no inputs when officer create request" using  (tx.inputs.isNotEmpty())
             val input = tx.inputs.single().state.data as OfficerAuthenticationRequestState
             "Certificate must be valid" using (isValid(input.officerCertificate))
             "Signature must be valid" using (verifySign(input.data, input.signature, input.officerCertificate.publicKey))
             val output = tx.outputs.single().data as OfficerAuthenticationResponseState
             "Certificate must be valid" using (isValid(output.officerCertificate))
             "Signature must be valid" using (verifySign(output.data, output.signature, output.officerCertificate.publicKey))
-            "Request and response id must be equals" using (output.requestId == input.requestId)
+            "Request and response id must be equal" using (output.requestId == input.requestId)
+            "Countries must be equal" using (input.geoData.country == output.geoData.country)
+            "Cities must be equal" using (input.geoData.city == output.geoData.city)
         }
     }
 }
