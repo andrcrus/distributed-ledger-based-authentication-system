@@ -28,6 +28,8 @@ import java.security.SecureRandom
 class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService) {
     private var counter = 0L
 
+    private val geoData = GeoData("NY", "USA", 40.7878800, -74.0143100)
+
     private val secureRandom = SecureRandom()
 
     companion object {
@@ -66,7 +68,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     fun putContainer(): ResponseEntity<String> {
         lateinit var result: String
         try {
-            result = cordaDialogService.registerNewContainer(initContainer())
+            result = cordaDialogService.registerNewContainer(initContainer(), geoData)
         }
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
@@ -97,7 +99,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         lateinit var result: String
         try {
             val realName = String(Base64.decode(name))
-            result = cordaDialogService.deleteContainer(realName)
+            result = cordaDialogService.deleteContainer(realName, geoData)
         }
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
@@ -110,7 +112,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val keyPair = generateKeyPair()
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
-        return cordaDialogService.createAuthRequest(initOfficerRequest(keyPair), data, sign)
+        return cordaDialogService.createAuthRequest(initOfficerRequest(keyPair), data, sign, geoData)
     }
 
     private fun initOfficerRequest(keyPair: KeyPair): OfficerCertificate {
@@ -123,7 +125,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
         val status = if (secureRandom.nextInt() % 2 == 0)  ResponseStatus.OK else ResponseStatus.FAILED
-        return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, status)
+        return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, status, geoData)
     }
 
     @GetMapping(value = ["/containers/change-carrier"], produces = ["application/json"])
@@ -133,6 +135,6 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val carrier = Carrier( "OOO PEREVOZKA PRO", carrierCert)
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
-        return cordaDialogService.changeCarrier(carrier, data, sign)
+        return cordaDialogService.changeCarrier(carrier, data, sign, geoData)
     }
 }

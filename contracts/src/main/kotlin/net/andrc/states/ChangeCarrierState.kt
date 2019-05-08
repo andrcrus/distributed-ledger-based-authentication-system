@@ -2,6 +2,7 @@ package net.andrc.states
 
 import net.andrc.contracts.ChangeCarrierContract
 import net.andrc.items.Carrier
+import net.andrc.items.GeoData
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.Contract
 import net.corda.core.contracts.ContractState
@@ -20,6 +21,7 @@ data class ChangeCarrierState(
         val carrier: Carrier,
         val data: String,
         val signature: String,
+        val geoData: GeoData,
         override val participants: List<AbstractParty>,
         val date: Date = Date()
 ) : ContractState
