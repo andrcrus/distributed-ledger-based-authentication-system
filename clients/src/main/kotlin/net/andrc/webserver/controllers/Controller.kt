@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.lang.IllegalArgumentException
 import java.security.KeyPair
 import java.security.SecureRandom
 
@@ -93,7 +94,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
             container = initIceCreamContainer(name)
         }
 
-        if (type.equals("GypsumHead", true)) {
+        if (type.equals("gypsumHead", true)) {
             container = initGypsumHeadContainer(name)
         }
 
@@ -161,12 +162,19 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/containers/auth/response/{id}"], produces = ["application/json"])
-    fun createAuthResp(@PathVariable id: String): String {
+    fun createAuthResp(@PathVariable id: String, @RequestParam("status") status: String): String {
+        var rstatus: ResponseStatus? = null
+        if (status.equals("ok", true)) {
+            rstatus = ResponseStatus.OK
+        }
+        if (status.equals("failed", true)) {
+            rstatus = ResponseStatus.FAILED
+        }
+        rstatus ?: throw IllegalArgumentException("Status $status does not exists!")
         val keyPair = generateKeyPair()
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
-        val status = if (secureRandom.nextInt() % 2 == 0)  ResponseStatus.OK else ResponseStatus.FAILED
-        return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, status, geoData)
+        return cordaDialogService.createAuthResponse(initOfficerRequest(keyPair), data, sign, id, rstatus, geoData)
     }
 
     @GetMapping(value = ["/containers/change-carrier"], produces = ["application/json"])

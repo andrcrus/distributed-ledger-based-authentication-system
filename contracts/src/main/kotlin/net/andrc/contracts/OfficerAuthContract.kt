@@ -33,7 +33,7 @@ class OfficerAuthContract : Contract {
             "Signature must be valid" using (verifySign(output.data, output.signature, output.officerCertificate.publicKey))
         }
         if (command == Response()) {
-            "There can be no inputs when officer create request" using  (tx.inputs.isNotEmpty())
+            "There can't be no inputs when officer create request" using  (tx.inputs.isNotEmpty())
             val input = tx.inputs.single().state.data as OfficerAuthenticationRequestState
             "Certificate must be valid" using (isValid(input.officerCertificate))
             "Signature must be valid" using (verifySign(input.data, input.signature, input.officerCertificate.publicKey))
