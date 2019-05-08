@@ -2,9 +2,7 @@ package net.andrc.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import net.andrc.contracts.CarrierEventContract
-import net.andrc.contracts.ChangeCarrierContract
 import net.andrc.states.CarrierEventState
-import net.andrc.states.ChangeCarrierState
 import net.corda.core.contracts.Command
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
@@ -56,7 +54,6 @@ class CarrierEventFlowReceiver(private val flowSession: FlowSession) : FlowLogic
             override fun checkTransaction(stx: SignedTransaction) {
                 requireThat {
                     "This must be an  officer authentication request transaction" using (stx.tx.outputs.single().data is CarrierEventState)
-                    stx.tx.outputs.single().data as ChangeCarrierState
                 }
             }
         }
