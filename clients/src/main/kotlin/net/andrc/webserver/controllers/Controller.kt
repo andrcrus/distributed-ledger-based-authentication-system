@@ -80,8 +80,8 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
             .map { it.toString() }
     )
 
-    @GetMapping(value = ["/containers/register"], produces = ["application/json"])
-    fun putContainer(@RequestParam("name") name : String, @RequestParam("type") type: String): ResponseEntity<String> {
+    @GetMapping(value = ["/containers/register/{type}"], produces = ["application/json"])
+    fun putContainer(@RequestParam("name") name : String, @PathVariable type: String): ResponseEntity<String> {
         lateinit var result: String
         var container: Container? = null
 
