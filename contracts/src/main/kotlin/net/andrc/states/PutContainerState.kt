@@ -34,9 +34,7 @@ data class PutContainerState(
             | "maxCapacity" : "$maxCapacity",
             | "items" : ${items.map { it.getItemInfo() }},
             | "containers" : "$containers",
-            | "owner" : "$owner",
-            | "geo" : "$geoData",
-            | "participants" : "$participants",
+            | "geo" : $geoData,
             | "date" : "$date"
             |}
             |

@@ -1,10 +1,7 @@
 package net.andrc.webserver.services
 
 import net.andrc.flows.*
-import net.andrc.items.Carrier
-import net.andrc.items.Container
-import net.andrc.items.GeoData
-import net.andrc.items.OfficerCertificate
+import net.andrc.items.*
 import net.andrc.states.*
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.cordaCommon.toJson
@@ -128,5 +125,15 @@ class CordaDialogService(val rootBoxService: RootBoxService, rpc: NodeRPCConnect
             |}
             |
         """.trimMargin()
+    }
+
+    fun carrierEvent(events: Events, itemProperties: List<ItemProperties>) {
+        val parties = rootBoxService.getAllContainers().filter {
+            it.getAllItems()
+                    .map { it.properties }
+                    .contains(itemProperties)
+        }.map { it.owner }.toMutableList()
+        parties.add(proxy.nodeInfo().legalIdentities.first())
+        proxy.startFlowDynamic(CarrierEventFlow::class.java, CarrierEventState(events, parties))
     }
 }

@@ -25,4 +25,17 @@ data class OfficerAuthenticationRequestState(
         override val participants: List<AbstractParty>,
         val requestId: String = UUID.randomUUID().toString(),
         val date: Date = Date()
-) : ContractState
+) : ContractState {
+    override fun toString(): String {
+        return """
+            |
+            | "officerAuthenticationRequestState" : {
+            |      "officerCertificate : $officerCertificate,
+            |      "geoData" : $geoData,
+            |      "requestId" : "$requestId",
+            |      "date" : "$date"
+            |}
+            |
+        """.trimMargin()
+    }
+}

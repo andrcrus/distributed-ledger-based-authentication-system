@@ -21,4 +21,16 @@ data class DeleteContainerState(
         val geoData: GeoData,
         override val participants: List<AbstractParty> = listOf(owner),
         val date: Date = Date()
-) : ContractState
+) : ContractState {
+    override fun toString(): String {
+        return """
+            |
+            |"deleteContainerState" : {
+            |    "containerName" : "$containerName",
+            |    "geoData" : $geoData,
+            |    "date" : "$date"
+            |}
+            |
+        """.trimMargin()
+    }
+}

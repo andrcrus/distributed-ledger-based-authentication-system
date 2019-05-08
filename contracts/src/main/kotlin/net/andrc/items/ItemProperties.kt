@@ -8,6 +8,6 @@ import net.corda.core.serialization.CordaSerializable
 @CordaSerializable
 enum class ItemProperties {
     FRAGILE,
-    SLOUGHING,
+    BEATING,
     FROZEN
 }

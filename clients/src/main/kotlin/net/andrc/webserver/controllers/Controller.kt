@@ -1,12 +1,12 @@
 package net.andrc.webserver.controllers
 
 import net.andrc.items.*
-import net.andrc.states.PutContainerState
-import net.andrc.states.ResponseStatus
+import net.andrc.states.*
 import net.andrc.utils.generateKeyPair
 import net.andrc.utils.signData
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.cordaCommon.toJson
+import net.andrc.webserver.events.Publisher
 import net.andrc.webserver.services.CordaDialogService
 import net.corda.core.transactions.SignedTransaction
 import org.jgroups.util.Base64
@@ -25,7 +25,7 @@ import java.security.SecureRandom
  */
 @RestController
 @RequestMapping("/")
-class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService) {
+class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService, private val publisher: Publisher) {
     private var counter = 0L
 
     private val geoData = GeoData("NY", "USA", 40.7878800, -74.0143100)
@@ -41,7 +41,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     private fun initContainer(): Container {
         val result = Container(10, "Container#${counter++}", proxy.partiesFromName("GlassContainer", false).first())
-        for (i in 1..10) {
+        for (i in 1..2) {
             result.putItem(generateItem())
         }
         return result
@@ -49,7 +49,7 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
 
     private fun generateItem(): Item {
         val certificate = ItemCertificate()
-        return Item("Tomatos", 1, certificate, listOf())
+        return Item("Glass", 5, certificate, listOf(ItemProperties.FRAGILE))
     }
 
     @GetMapping(value = ["/about"], produces = ["text/plain"])
@@ -77,22 +77,12 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
-    fun registered(): String {
-        val builder = StringBuilder("[")
-        val iterator = proxy.vaultQuery(PutContainerState::class.java).states.iterator()
-        while (iterator.hasNext()) {
-            builder.append(iterator.next().state.data.toString())
-            if (iterator.hasNext()) {
-                builder.append(",\n")
-            }
-        }
-        builder.append("]")
-        return builder.toString()
+    fun registered(): List<String> {
+        return proxy.vaultQuery(PutContainerState::class.java).states.map { it.state.data.toString() }
     }
 
     @GetMapping(value = ["/containers/all"], produces = ["application/json"])
     fun allContainers(): String = cordaDialogService.rootBoxService.getAll().toString()
-
 
     @GetMapping(value = ["/containers/delete/{name}"], produces = ["application/json"])
     fun deleteContainer(@PathVariable name: String): ResponseEntity<String> {
@@ -113,6 +103,26 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
         return cordaDialogService.createAuthRequest(initOfficerRequest(keyPair), data, sign, geoData)
+    }
+
+    @GetMapping(value = ["/containers/auth/requests"], produces = ["application/json"])
+    fun authReqs(): List<String> {
+        return proxy.vaultQuery(OfficerAuthenticationRequestState::class.java).states.map { it.state.data.toString() }
+    }
+
+    @GetMapping(value = ["/containers/auth/responses"], produces = ["application/json"])
+    fun authResps(): List<String> {
+        return proxy.vaultQuery(OfficerAuthenticationResponseState::class.java).states.map { it.state.data.toString() }
+    }
+
+    @GetMapping(value = ["/containers/deleted"], produces = ["application/json"])
+    fun deleted(): List<String> {
+        return proxy.vaultQuery(DeleteContainerState::class.java).states.map { it.state.data.toString() }
+    }
+
+    @GetMapping(value = ["/containers/carriers"], produces = ["application/json"])
+    fun carriers(): List<String> {
+        return proxy.vaultQuery(ChangeCarrierState::class.java).states.map { it.state.data.toString() }
     }
 
     private fun initOfficerRequest(keyPair: KeyPair): OfficerCertificate {
@@ -136,5 +146,15 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
         return cordaDialogService.changeCarrier(carrier, data, sign, geoData)
+    }
+
+    @GetMapping(value = ["/event/publish/{name}"], produces = ["application/json"])
+    fun publish(@PathVariable name: String): String {
+        return publisher.publish(name)
+    }
+
+    @GetMapping(value = ["/event/published"], produces = ["application/json"])
+    fun published(): List<String> {
+        return proxy.vaultQuery(CarrierEventState::class.java).states.map { it.state.data.toString() }
     }
 }

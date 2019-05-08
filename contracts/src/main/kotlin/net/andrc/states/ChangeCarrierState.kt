@@ -24,4 +24,16 @@ data class ChangeCarrierState(
         val geoData: GeoData,
         override val participants: List<AbstractParty>,
         val date: Date = Date()
-) : ContractState
+) : ContractState {
+    override fun toString(): String {
+        return """
+            |
+            |"changeCarrierState" : {
+            |   "carrier" : "$carrier",
+            |   "geoData" : $geoData,
+            |   "date" : "$date"
+            |}
+            |
+        """.trimMargin()
+    }
+}

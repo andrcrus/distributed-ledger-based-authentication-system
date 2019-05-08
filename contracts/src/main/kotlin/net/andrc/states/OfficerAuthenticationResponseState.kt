@@ -27,7 +27,21 @@ data class OfficerAuthenticationResponseState(
         val geoData: GeoData,
         override val participants: List<AbstractParty>,
         val date: Date = Date()
-) : ContractState
+) : ContractState {
+    override fun toString(): String {
+        return """
+            |
+            |"officerAuthenticationResponseState" : {
+            |     "officerCertificate" : $officerCertificate,
+            |      "result" : "$result",
+            |      "requestId" : "$requestId",
+            |      "geoData" : "$geoData",
+            |      "date" : "$date"
+            |}
+            |
+        """.trimMargin()
+    }
+}
 
 @CordaSerializable
 enum class ResponseStatus {
