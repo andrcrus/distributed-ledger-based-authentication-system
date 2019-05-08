@@ -2,6 +2,7 @@ package net.andrc.webserver.controllers
 
 import net.andrc.items.*
 import net.andrc.states.*
+import net.andrc.states.ResponseStatus
 import net.andrc.utils.generateKeyPair
 import net.andrc.utils.signData
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
@@ -13,10 +14,7 @@ import org.jgroups.util.Base64
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.security.KeyPair
 import java.security.SecureRandom
 
@@ -26,8 +24,6 @@ import java.security.SecureRandom
 @RestController
 @RequestMapping("/")
 class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDialogService, private val publisher: Publisher) {
-    private var counter = 0L
-
     private val geoData = GeoData("NY", "USA", 40.7878800, -74.0143100)
 
     private val secureRandom = SecureRandom()
@@ -39,23 +35,43 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     private val proxy = rpc.proxy
 
 
-    private fun initContainer(): Container {
-        val result = Container(10, "Container#${counter++}", proxy.partiesFromName("GlassContainer", false).first())
+    private fun initGlassContainer(name: String): Container {
+        val result = Container(15, name, proxy.partiesFromName("GlassContainer", false).first())
         for (i in 1..2) {
-            result.putItem(generateItem())
+            result.putItem(generateGlassItem())
         }
         return result
     }
 
-    private fun generateItem(): Item {
+    private fun generateGlassItem(): Item {
         val certificate = ItemCertificate()
-        return Item("Glass", 5, certificate, listOf(ItemProperties.FRAGILE))
+        return Item("Glass", 5, certificate, listOf(ItemProperties.BEATING))
     }
 
-    @GetMapping(value = ["/about"], produces = ["text/plain"])
-    fun about(): String {
-        logger.debug("Request to about...")
-        return proxy.nodeInfo().toString()
+    private fun initIceCreamContainer(name: String): Container {
+        val result = Container(10, name, proxy.partiesFromName("IceCreamContainer", false).first())
+        for (i in 1..2) {
+            result.putItem(generateIceCreamItem())
+        }
+        return result
+    }
+
+    private fun generateIceCreamItem(): Item {
+        val certificate = ItemCertificate()
+        return Item("IceCream", 1, certificate, listOf(ItemProperties.FROZEN))
+    }
+
+    private fun initGypsumHeadContainer(name: String): Container {
+        val result = Container(10, name, proxy.partiesFromName("GypsumHeadContainer", false).first())
+        for (i in 1..2) {
+            result.putItem(generateGypsumHeadItem())
+        }
+        return result
+    }
+
+    private fun generateGypsumHeadItem(): Item {
+        val certificate = ItemCertificate()
+        return Item("GypsumHead", 1, certificate, listOf(ItemProperties.FRAGILE))
     }
 
     @GetMapping(value = ["/peers"], produces = ["application/json"])
@@ -65,10 +81,25 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     )
 
     @GetMapping(value = ["/containers/register"], produces = ["application/json"])
-    fun putContainer(): ResponseEntity<String> {
+    fun putContainer(@RequestParam("name") name : String, @RequestParam("type") type: String): ResponseEntity<String> {
         lateinit var result: String
+        var container: Container? = null
+
+        if (type.equals("glass", true)) {
+            container = initGlassContainer(name)
+        }
+
+        if (type.equals("iceCream", true)) {
+            container = initIceCreamContainer(name)
+        }
+
+        if (type.equals("GypsumHead", true)) {
+            container = initGypsumHeadContainer(name)
+        }
+
+        container ?: return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Type $type is undefined!")
         try {
-            result = cordaDialogService.registerNewContainer(initContainer(), geoData)
+            result = cordaDialogService.registerNewContainer(container, geoData)
         }
         catch (e: Exception) {
             return ResponseEntity.status(HttpStatus.I_AM_A_TEAPOT).body(e.message)
@@ -139,10 +170,10 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/containers/change-carrier"], produces = ["application/json"])
-    fun changeCarrier(): String {
+    fun changeCarrier(@RequestParam("name") name: String): String {
         val keyPair = generateKeyPair()
         val carrierCert = CarrierCertificate(keyPair.public)
-        val carrier = Carrier( "OOO PEREVOZKA PRO", carrierCert)
+        val carrier = Carrier( name, carrierCert)
         val data = secureRandom.nextLong().toString()
         val sign = signData(data, keyPair.private)
         return cordaDialogService.changeCarrier(carrier, data, sign, geoData)
