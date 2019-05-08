@@ -1,6 +1,7 @@
 package net.andrc.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import net.andrc.contracts.CarrierEventContract
 import net.andrc.contracts.ChangeCarrierContract
 import net.andrc.states.CarrierEventState
 import net.andrc.states.ChangeCarrierState
@@ -35,7 +36,7 @@ class CarrierEventFlow(private val carrierEventState: CarrierEventState) : FlowL
         val sessions = carrierEventState.participants.filter { it != ourIdentity }.map { initiateFlow(it as Party) }
         progressTracker.currentStep = CREATING
         val tx = TransactionBuilder(notary)
-                .addCommand(Command(ChangeCarrierContract.Change(), carrierEventState.participants.map { it.owningKey }))
+                .addCommand(Command(CarrierEventContract.CarrierEvent(), carrierEventState.participants.map { it.owningKey }))
                 .addOutputState(carrierEventState)
         val signedRecord = serviceHub.signInitialTransaction(tx)
         progressTracker.currentStep = VERIFYING
