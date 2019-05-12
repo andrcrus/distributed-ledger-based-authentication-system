@@ -5,6 +5,7 @@ import net.andrc.states.*
 import net.andrc.states.ResponseStatus
 import net.andrc.utils.generateKeyPair
 import net.andrc.utils.signData
+import net.andrc.utils.toJsonString
 import net.andrc.webserver.cordaCommon.NodeRPCConnection
 import net.andrc.webserver.cordaCommon.toJson
 import net.andrc.webserver.events.Publisher
@@ -109,8 +110,10 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/containers/registered"], produces = ["application/json"])
-    fun registered(): List<String> {
-        return proxy.vaultQuery(PutContainerState::class.java).states.map { it.state.data.toString() }
+    fun registered(): String {
+        return proxy.vaultQuery(PutContainerState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 
     @GetMapping(value = ["/containers/all"], produces = ["application/json"])
@@ -138,23 +141,31 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/containers/auth/requests"], produces = ["application/json"])
-    fun authReqs(): List<String> {
-        return proxy.vaultQuery(OfficerAuthenticationRequestState::class.java).states.map { it.state.data.toString() }
+    fun authReqs(): String {
+        return proxy.vaultQuery(OfficerAuthenticationRequestState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 
     @GetMapping(value = ["/containers/auth/responses"], produces = ["application/json"])
-    fun authResps(): List<String> {
-        return proxy.vaultQuery(OfficerAuthenticationResponseState::class.java).states.map { it.state.data.toString() }
+    fun authResps(): String {
+        return proxy.vaultQuery(OfficerAuthenticationResponseState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 
     @GetMapping(value = ["/containers/deleted"], produces = ["application/json"])
-    fun deleted(): List<String> {
-        return proxy.vaultQuery(DeleteContainerState::class.java).states.map { it.state.data.toString() }
+    fun deleted(): String {
+        return proxy.vaultQuery(DeleteContainerState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 
     @GetMapping(value = ["/containers/carriers"], produces = ["application/json"])
-    fun carriers(): List<String> {
-        return proxy.vaultQuery(ChangeCarrierState::class.java).states.map { it.state.data.toString() }
+    fun carriers(): String {
+        return proxy.vaultQuery(ChangeCarrierState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 
     private fun initOfficerRequest(keyPair: KeyPair): OfficerCertificate {
@@ -193,7 +204,9 @@ class Controller(rpc: NodeRPCConnection, private val cordaDialogService: CordaDi
     }
 
     @GetMapping(value = ["/event/published"], produces = ["application/json"])
-    fun published(): List<String> {
-        return proxy.vaultQuery(CarrierEventState::class.java).states.map { it.state.data.toString() }
+    fun published(): String {
+        return proxy.vaultQuery(CarrierEventState::class.java).states
+                .map { it.state.data.toString() }
+                .toJsonString()
     }
 }
