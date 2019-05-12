@@ -71,11 +71,17 @@ Where name is event's name. Can be: StrongShaking, StopStrongShaking, Shaking, S
 Returns history of events 
 ***
 * DEMO
-[AfterDeploy](img/AfterDeploy.png)
-[createContainer](img/createContainer.png)
-[registered](img/registered.png)
-[AuthRequest](img/AuthRequest.png)
-[AuthResponse](img/AuthResponse.png)
-[changeCarrier](img/changeCarrier.png)
-[Published](img/Published.png)
+![AfterDeploy](img/AfterDeploy.png)
+
+![createContainer](img/createContainer.png)
+
+![registered](img/registered.png)
+
+![AuthRequest](img/AuthRequest.png)
+
+![AuthResponse](img/AuthResponse.png)
+
+![changeCarrier](img/changeCarrier.png)
+
+![Published](img/Published.png)
 
