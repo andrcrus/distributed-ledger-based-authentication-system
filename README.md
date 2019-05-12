@@ -69,3 +69,13 @@ Returns list of all carriers
 Where name is event's name. Can be: StrongShaking, StopStrongShaking, Shaking, StopShaking, TurnOffTheFrige, TurnOnTheFrige
 * GET /event/published
 Returns history of events 
+***
+* DEMO
+[AfterDeploy](img/AfterDeploy.png)
+[createContainer](img/createContainer.png)
+[registered](img/registered.png)
+[AuthRequest](img/AuthRequest.png)
+[AuthResponse](img/AuthResponse.png)
+[changeCarrier](img/changeCarrier.png)
+[Published](img/Published.png)
+
